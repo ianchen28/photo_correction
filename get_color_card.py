@@ -4,6 +4,7 @@ import os
 
 image = None
 
+
 # 鼠标回调函数
 def mouse_callback(event, x, y, flags, param):
     global points
@@ -17,6 +18,7 @@ def mouse_callback(event, x, y, flags, param):
             print("Four points selected. Processing image...")
             process_image(image, np.array(points, dtype=np.float32), filename)
 
+
 # 透视变换函数
 # 将src_image图像中src_points四个点的区域变换到一个400*600的矩形区域
 def warp_perspective(src_image, src_points):
@@ -29,7 +31,8 @@ def warp_perspective(src_image, src_points):
         src_points[2], src_points[3] = src_points[3], src_points[2]
     print('Sorted points:', src_points)
     # 目标图像的四个点
-    dst_points = np.array([[0, 0], [0, 400], [600, 0], [600, 400]], dtype=np.float32)
+    dst_points = np.array([[0, 0], [0, 400], [600, 0], [600, 400]],
+                          dtype=np.float32)
     # 透视变换矩阵
     M = cv2.getPerspectiveTransform(src_points, dst_points)
     # 透视变换
@@ -37,12 +40,13 @@ def warp_perspective(src_image, src_points):
     # 显示透视变换后的图像
     cv2.imshow('Warped Image', warped_image)
     return warped_image
-    
+
 
 # 白平衡校正函数
 def correct_white_balance(warped_image):
     # 这里应该添加白平衡校正逻辑
     return warped_image
+
 
 # 图像处理函数
 def process_image(image, points, filename):
@@ -72,6 +76,7 @@ def process_image(image, points, filename):
     # 保存colors到csv文件
     np.savetxt(output_file_path, colors, delimiter=',', fmt='%d')
 
+
 # 批处理图像函数
 def batch_process_images(folder_path):
     for filename in os.listdir(folder_path):
@@ -80,6 +85,7 @@ def batch_process_images(folder_path):
             image = cv2.imread(image_path)
             if image is not None:
                 process_image_with_selection(image, filename)
+
 
 # 选择点并处理图像函数
 def process_image_with_selection(image, filename):
@@ -94,6 +100,24 @@ def process_image_with_selection(image, filename):
     cv2.waitKey(0)
     cv2.destroyAllWindows()
 
+
+def average_color_card(folder):
+    colors = []
+    for filename in os.listdir(folder):
+        if filename.lower().endswith('.csv'):
+            color = np.loadtxt(os.path.join(folder, filename), delimiter=',')
+            colors.append(color)
+    colors = np.array(colors)
+    average_color = np.mean(colors, axis=0)
+    print(average_color)
+    return average_color
+
+
 if __name__ == "__main__":
     folder_path = 'data'
     batch_process_images(folder_path)
+
+    avg_color = average_color_card('color_card')
+    df = pd.DataFrame(avg_color[:, ::-1])
+    df.columns = ['R', 'G', 'B']
+    df.to_csv('average_color_card.csv', index=False, sep='\t')

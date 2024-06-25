@@ -25,6 +25,7 @@ def draw_color_card(rgb=RGB):
 
 # draw_color_card()
 
+
 def correct_white_balance(image, card_bgr):
     # 将图片转换到BGR颜色空间，因为OpenCV默认使用BGR
     image_bgr = cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
@@ -53,7 +54,8 @@ def correct_white_balance(image, card_bgr):
     image_transformed = np.dot(np.concatenate((bias, image_norm), axis=2), x)
 
     # 其余代码保持不变
-    image_transformed = np.clip(image_transformed * 255, 0, 255).astype(np.uint8)
+    image_transformed = np.clip(image_transformed * 255, 0,
+                                255).astype(np.uint8)
 
     # 将处理后的图像转换回BGR颜色空间
     image_corrected = cv2.cvtColor(image_transformed, cv2.COLOR_RGB2BGR)
@@ -64,6 +66,7 @@ def correct_white_balance(image, card_bgr):
     cv2.destroyAllWindows()
     return image_corrected
 
+
 for file in os.listdir('color_card'):
     if file.endswith('.csv'):
         observed_bgr_values = pd.read_csv(os.path.join('color_card', file),
@@ -71,4 +74,6 @@ for file in os.listdir('color_card'):
         image = cv2.imread(os.path.join('data', file.replace('.csv', '.jpg')))
         correct_img = correct_white_balance(image, observed_bgr_values)
         # save the corrected image
-        cv2.imwrite(os.path.join('correct', file.replace('.csv', '_corrected.jpg')), correct_img)
+        cv2.imwrite(
+            os.path.join('correct', file.replace('.csv', '_corrected.jpg')),
+            correct_img)
